@@ -45,11 +45,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GameState.cs" />
+    <Compile Include="Models\Requests\GameState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PingResponse.cs" />
-    <Compile Include="TurnResponse.cs" />
+    <Compile Include="Models\Responses\PingResponse.cs" />
+    <Compile Include="Models\Responses\TurnResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
