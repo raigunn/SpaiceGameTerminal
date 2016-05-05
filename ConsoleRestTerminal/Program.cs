@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,38 +19,72 @@ namespace ConsoleRestTerminal
 
 	class Program
 	{
-		private static string _url = "";
+		private static string _url1 = "";
+		private static string _url2 = "";
 		static void Main(string[] args)
 		{
 			// begin dialog to get url of server
-			_url = GetUrl();
-			if (_url.Equals("exit")) return;
+			_url1 = GetUrl1();
+			_url2 = GetUrl2();
+			int turnCount = GetTurnCount();
+			DisplayServers();
 
-			string result = GetTurnCount();
-			if (result.Equals("exit")) return;
+			Console.WriteLine(@"Press 'enter' to start game");
+			Console.ReadKey();
+			ConsoleDraw.InitializeGrid();
+
+			GameState initialGameState = GameState.MakeInitialGameState();
+			for (int i = turnCount; i > 0; i--)
+			{
+				ConsoleDraw.DrawGrid(initialGameState.Players);
+
+				Requests bs = new Requests();
+				Task<IList<TurnResponse>> turnResponses = bs.RunGameRequests(_url1, _url2, initialGameState);
+
+				Task.WaitAll(turnResponses); // block while the task completes
+
+				int[] player1position = ConvertDirectionToCoordinate(turnResponses.Result[0].MoveDirection, initialGameState.Players[0][0], initialGameState.Players[0][1]);
+				int[] player2position = ConvertDirectionToCoordinate(turnResponses.Result[1].MoveDirection, initialGameState.Players[1][0], initialGameState.Players[1][1]);
+
+				initialGameState = MakeGameState(1, player1position[0], player1position[1], player2position[0], player2position[1]);
+			}
 
 
-			Thread.Sleep(1500);
-			DrawGame();
+
+			Console.WriteLine("done calculating, press 'enter' to watch");
+			Console.ReadKey();
+		//	DrawGame();
 
 			// exit on keystroke
 			Console.ReadKey();
 		}
 
-		private static string GetUrl()
+
+		private static int[] ConvertDirectionToCoordinate(int direction, int x, int y)
+		{
+			if (direction == 1) x = x + 1;
+			if (direction == 3) x = x - 1;
+			if (direction == 0) y = y - 1;
+			if (direction == 2) y = y + 1;
+			return new int[] { x, y };
+		}
+
+
+		private static string GetUrl1()
 		{
 			Console.WriteLine("Enter in server info: (http://localhost:8000/DEMOService/");
 
-			string url = "";
+			string url1 = "";
 			bool validServer = false;
 			do
 			{
-				url = Console.ReadLine();
-				if (url == "exit") return "exit";
-				if (url == "default1") url = "http://localhost:8000/DEMOService/";
+				url1 = Console.ReadLine();
+				if (url1 == "exit") return "exit";
+				if (url1 == "default1") url1 = "http://localhost:8000/DEMOService/";
+				else if (url1 == "default2") url1 = "http://localhost:8001/RestService/";
 
 				Console.WriteLine("");
-				PingResponse pingResponse = MakeGetRequest<PingResponse>(url + "Json");
+				PingResponse pingResponse = Requests.MakeGetRequest<PingResponse>(url1 + "Ping");
 				if (pingResponse == null)
 				{
 					Console.WriteLine("Please try again or type 'exit'");
@@ -60,13 +95,49 @@ namespace ConsoleRestTerminal
 					validServer = true;
 				}
 			} while (!validServer);
-			return url;
+			return url1;
+		}
+
+		private static string GetUrl2()
+		{
+			Console.WriteLine("Enter in server info: (http://localhost:8000/DEMOService/");
+
+			string url2 = "";
+			bool validServer = false;
+			do
+			{
+				url2 = Console.ReadLine();
+				if (url2 == "exit") return "exit";
+				if (url2 == "default1") url2 = "http://localhost:8000/DEMOService/";
+				else if (url2 == "default2") url2 = "http://localhost:8001/RestService/";
+
+				Console.WriteLine("");
+				PingResponse pingResponse = Requests.MakeGetRequest<PingResponse>(url2 + "Ping");
+				if (pingResponse == null)
+				{
+					Console.WriteLine("Please try again or type 'exit'");
+				}
+				else
+				{
+					ProcessResponse(pingResponse);
+					validServer = true;
+				}
+			} while (!validServer);
+
+			return url2;
+		}
+
+		private static void DisplayServers()
+		{
+			Console.WriteLine("Thank you, your two servers are:");
+			Console.WriteLine("URL 1: " + _url1);
+			Console.WriteLine("URL 2: " + _url2);
 		}
 
 
-		private static string GetTurnCount()
+		private static int GetTurnCount()
 		{
-			Console.WriteLine("Enter number of rounds to begin game, or type 'exit'");
+			Console.WriteLine("Enter number of rounds");
 
 			string turnCount = "";
 			int intTurnCount;
@@ -74,66 +145,20 @@ namespace ConsoleRestTerminal
 			do
 			{
 				turnCount = Console.ReadLine();
-				if (turnCount == "exit"  ) return "exit";
 				if (!int.TryParse(turnCount, out intTurnCount) || intTurnCount < 1 || intTurnCount > 100)
 				{
 					Console.WriteLine("Please enter a valid number");
 				}
-				else
-				{
-					TurnResponse turnResponse = new TurnResponse();
-					int x = 0;
-					int y = 1;
-					Console.WriteLine("Starting Game...");
-					for (int i = 0; i < intTurnCount; i++)
-					{
-						GameState gameState;
-						if (i == 0)
-						{
-							gameState = MakeInitialGameState();
-						}
-						else
-						{
-							if (turnResponse.MoveDirection == 1) x = x + 1;
-							if (turnResponse.MoveDirection == 3) x = x - 1;
-							if (turnResponse.MoveDirection == 0) y = y - 1;
-							if (turnResponse.MoveDirection == 2) y = y + 1;
-							gameState = MakeGameState(i + 1, x, y);
-						}
-
-						turnResponse = MakePostRequest<GameState, TurnResponse>(_url + "Turn", gameState);
-						ProcessTurnResponse(turnResponse);
-					}
-					isValid = true;
-				}
+				else isValid = true;
 			} while (!isValid);
-			return "done";
+			return intTurnCount;
 		}
 
 
 
-		public static U MakeGetRequest<U>(string requestUrl) where U : class
-		{
-			try
-			{
-				HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
-				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-				{
-					if (response.StatusCode != HttpStatusCode.OK)
-						throw new Exception(String.Format("Server error (HTTP {0}: {1}).", response.StatusCode, response.StatusDescription));
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(U));
-					object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
-					U jsonResponse = objResponse as U;
-					
-					return jsonResponse;
-				}
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("ERROR: " + e.Message);
-				return null;
-			}
-		}
+		
+
+
 
 		static public void ProcessResponse(PingResponse pingResponse)
 		{
@@ -148,18 +173,18 @@ namespace ConsoleRestTerminal
 			{
 				Round = 1,
 				GridSize = new int[] {8,8},
-				Players = new List<int[]>() { new int[] {0, 1}, new int[] {2, 3}}
+				Players = new List<int[]>() { new int[] {0, 1}, new int[] {4, 5}}
 			};
 			return gameState;
 		}
 
-		private static GameState MakeGameState(int round, int x, int y)
+		private static GameState MakeGameState(int round, int x, int y, int xx, int yy)
 		{
 			var gameState = new GameState()
 			{
 				Round = round,
 				GridSize = new int[] { 8, 8 },
-				Players = new List<int[]>() { new int[] { x, y }, new int[] { 2, 3 } }
+				Players = new List<int[]>() { new int[] { x, y }, new int[] { xx, yy } }
 			};
 			return gameState;
 		}
@@ -173,44 +198,8 @@ namespace ConsoleRestTerminal
 		}
 
 
-		private static U MakePostRequest<T, U>(string requestUrl, T gameState) where U : class
-		{
-			try
-			{
-				// prepare the request
-				HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
-				string json = new JavaScriptSerializer().Serialize(gameState);
-				byte[] byteArray = new UTF8Encoding().GetBytes(json);
-				request.ContentLength = byteArray.Length;
-				request.ContentType = @"application/json";
-				request.Method = "POST";
 
-				// send the request
-				using (Stream dataStream = request.GetRequestStream())
-				{
-					dataStream.Write(byteArray, 0, byteArray.Length);
-				}
-
-				// get the response
-				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-				{
-					if (response.StatusCode != HttpStatusCode.OK)
-						throw new Exception($"Server error (HTTP {response.StatusCode}: {response.StatusDescription}).");
-
-					// convert json string to type U
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(U));
-					object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
-					U jsonResponse = (U)objResponse;
-
-					return jsonResponse;
-				}
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine(e.Message);
-				return null;
-			}
-		}
+		
 
 
 		// if x == 0; replace [1-4]
