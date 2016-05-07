@@ -111,23 +111,23 @@ namespace ConsoleRestTerminal
 
 		private static GameState MakeInitialGameState()
 		{
-			var gameState = new GameState()
-			{
-				Round = 1,
-				GridSize = new int[] { 8, 8 },
-				Players = new List<int[]>() { new int[] { 0, 1 }, new int[] { 2, 3 } }
-			};
+			var gameState = new GameState();
+			//{
+			//	Round = 1,
+			//	GridSize = new int[] { 8, 8 },
+			//	Players = new List<int[]>() { new int[] { 0, 1 }, new int[] { 2, 3 } }
+			//};
 			return gameState;
 		}
 
 		private static GameState MakeGameState(int round, int x, int y)
 		{
-			var gameState = new GameState()
-			{
-				Round = round,
-				GridSize = new int[] { 8, 8 },
-				Players = new List<int[]>() { new int[] { x, y }, new int[] { 2, 3 } }
-			};
+			var gameState = new GameState();
+			//{
+			//	Round = round,
+			//	GridSize = new int[] { 8, 8 },
+			//	Players = new List<int[]>() { new int[] { x, y }, new int[] { 2, 3 } }
+			//};
 			return gameState;
 		}
 

@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using ConsoleRestTerminal.Enums;
+using ConsoleRestTerminal.Models;
 using ConsoleRestTerminal.Models.Requests;
 using ConsoleRestTerminal.Models.Responses;
 
@@ -43,30 +45,30 @@ namespace ConsoleRestTerminal
 
 				Task.WaitAll(turnResponses); // block while the task completes
 
-				int[] player1position = ConvertDirectionToCoordinate(turnResponses.Result[0].MoveDirection, initialGameState.Players[0][0], initialGameState.Players[0][1]);
-				int[] player2position = ConvertDirectionToCoordinate(turnResponses.Result[1].MoveDirection, initialGameState.Players[1][0], initialGameState.Players[1][1]);
+				Position position1 = ConvertDirectionToPosition((Directions)turnResponses.Result[0].MoveDirection, initialGameState.Players[0].Position);
+				Position position2 = ConvertDirectionToPosition((Directions)turnResponses.Result[1].MoveDirection, initialGameState.Players[1].Position);
+				Player player1 = new Player(0, "player 1", position1, turnResponses.Result[0].MoveDirection);
+				Player player2 = new Player(0, "player 2", position2, turnResponses.Result[1].MoveDirection);
 
-				initialGameState = MakeGameState(1, player1position[0], player1position[1], player2position[0], player2position[1]);
+				initialGameState = MakeGameState(1, player1.Position, player2.Position);
 			}
 
 
-
 			Console.WriteLine("done calculating, press 'enter' to watch");
-			Console.ReadKey();
-		//	DrawGame();
+
 
 			// exit on keystroke
 			Console.ReadKey();
 		}
 
 
-		private static int[] ConvertDirectionToCoordinate(int direction, int x, int y)
+		private static Position ConvertDirectionToPosition(Directions direction, Position p)
 		{
-			if (direction == 1) x = x + 1;
-			if (direction == 3) x = x - 1;
-			if (direction == 0) y = y - 1;
-			if (direction == 2) y = y + 1;
-			return new int[] { x, y };
+			if (direction == Directions.Right) p.X++;
+			if (direction == Directions.Left) p.X--;
+			if (direction == Directions.Up) p.Y--;
+			if (direction == Directions.Down) p.Y++;
+			return p;
 		}
 
 
@@ -127,6 +129,16 @@ namespace ConsoleRestTerminal
 			return url2;
 		}
 
+		private static void GetUrls()
+		{
+
+			// http://stackoverflow.com/questions/20365214/a-simple-menu-in-a-console-application
+
+		}
+
+
+
+
 		private static void DisplayServers()
 		{
 			Console.WriteLine("Thank you, your two servers are:");
@@ -173,29 +185,29 @@ namespace ConsoleRestTerminal
 			{
 				Round = 1,
 				GridSize = new int[] {8,8},
-				Players = new List<int[]>() { new int[] {0, 1}, new int[] {4, 5}}
+				Players = new List<Player>() { new Player(0, "player1", new Position(0, 1, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(4, 5, 0, 0), (int)Directions.Up) }
 			};
 			return gameState;
 		}
 
-		private static GameState MakeGameState(int round, int x, int y, int xx, int yy)
+		private static GameState MakeGameState(int round, Position player1, Position player2)
 		{
 			var gameState = new GameState()
 			{
 				Round = round,
 				GridSize = new int[] { 8, 8 },
-				Players = new List<int[]>() { new int[] { x, y }, new int[] { xx, yy } }
+				Players = new List<Player>() { new Player(0, "player1", player1, (int)Directions.Down), new Player(1, "player2", player2, (int)Directions.Up) }
 			};
 			return gameState;
 		}
 
 
 
-		private static void ProcessTurnResponse(TurnResponse turnResponse)
-		{
-			var json = new JavaScriptSerializer().Serialize(turnResponse);
-			Console.WriteLine(json);
-		}
+		//private static void ProcessTurnResponse(TurnResponse turnResponse)
+		//{
+		//	var json = new JavaScriptSerializer().Serialize(turnResponse);
+		//	Console.WriteLine(json);
+		//}
 
 
 
@@ -212,89 +224,89 @@ namespace ConsoleRestTerminal
 		//	then add x * 5
 		// initial y offset == 1
 		// then add y * 3
-		private static void DrawGame()
-		{
-			Console.CursorVisible = false;
+		//private static void DrawGame()
+		//{
+		//	Console.CursorVisible = false;
 
-			string shipTop =		@"/''\";
-			string shipBottom = @"\__/";
+		//	string shipTop =		@"/''\";
+		//	string shipBottom = @"\__/";
 
-			var arr = new[]
-			{
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+",
-				@"|    |    |    |    |    |    |    |    |",
-				@"|    |    |    |    |    |    |    |    |",
-				@"+----+----+----+----+----+----+----+----+"
-			};
-
-
-			Console.WindowWidth = 100;
-			Console.WindowHeight = 40;
-			Console.Clear();
-			foreach (string line in arr)
-			{
-				Console.WriteLine(line);
-			}
-			Thread.Sleep(500);
+		//	var arr = new[]
+		//	{
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"|    |    |    |    |    |    |    |    |",
+		//		@"+----+----+----+----+----+----+----+----+"
+		//	};
 
 
-
-			List<int[]> testPositions = new List<int[]>();
-			testPositions.Add(new[] { 0, 0 });
-			testPositions.Add(new[] { 1, 1 });
-			testPositions.Add(new[] { 2, 2 });
-			testPositions.Add(new[] { 3, 3 });
-			testPositions.Add(new[] { 4, 4 });
-
-			foreach (var testPosition in testPositions)
-			{
-				int rowIndexA = 1 + (testPosition[1]*3);
-				int rowIndexB = rowIndexA + 1;
-				string rowA = arr[rowIndexA];
-				string rowB = arr[rowIndexB];
-				int colIndexA = 1 + (testPosition[0]*5);
-				int colIndexB = colIndexA + 4;
-				StringBuilder sbA = new StringBuilder(rowA);
-				sbA.Replace("    ", shipTop, colIndexA, 4);
-				StringBuilder sbB = new StringBuilder(rowB);
-				sbB.Replace("    ", shipBottom, colIndexA, 4);
-				arr[rowIndexA] = sbA.ToString();
-				arr[rowIndexB] = sbB.ToString();
-
-
-				Console.Clear();
-				foreach (string line in arr)
-				{
-					Console.WriteLine(line);
-				}
-				Thread.Sleep(500);
-			}
+		//	Console.WindowWidth = 100;
+		//	Console.WindowHeight = 40;
+		//	Console.Clear();
+		//	foreach (string line in arr)
+		//	{
+		//		Console.WriteLine(line);
+		//	}
+		//	Thread.Sleep(500);
 
 
 
-			Console.ReadKey();
-		}
+		//	List<int[]> testPositions = new List<int[]>();
+		//	testPositions.Add(new[] { 0, 0 });
+		//	testPositions.Add(new[] { 1, 1 });
+		//	testPositions.Add(new[] { 2, 2 });
+		//	testPositions.Add(new[] { 3, 3 });
+		//	testPositions.Add(new[] { 4, 4 });
+
+		//	foreach (var testPosition in testPositions)
+		//	{
+		//		int rowIndexA = 1 + (testPosition[1]*3);
+		//		int rowIndexB = rowIndexA + 1;
+		//		string rowA = arr[rowIndexA];
+		//		string rowB = arr[rowIndexB];
+		//		int colIndexA = 1 + (testPosition[0]*5);
+		//		int colIndexB = colIndexA + 4;
+		//		StringBuilder sbA = new StringBuilder(rowA);
+		//		sbA.Replace("    ", shipTop, colIndexA, 4);
+		//		StringBuilder sbB = new StringBuilder(rowB);
+		//		sbB.Replace("    ", shipBottom, colIndexA, 4);
+		//		arr[rowIndexA] = sbA.ToString();
+		//		arr[rowIndexB] = sbB.ToString();
+
+
+		//		Console.Clear();
+		//		foreach (string line in arr)
+		//		{
+		//			Console.WriteLine(line);
+		//		}
+		//		Thread.Sleep(500);
+		//	}
+
+
+
+		//	Console.ReadKey();
+		//}
 
 	}
 }

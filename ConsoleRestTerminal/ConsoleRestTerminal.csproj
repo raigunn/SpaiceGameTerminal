@@ -48,6 +48,9 @@
     <Compile Include="AsyncRequest2.cs" />
     <Compile Include="AynchRequest.cs" />
     <Compile Include="ConsoleDraw.cs" />
+    <Compile Include="Enums\Directions.cs" />
+    <Compile Include="Models\Requests\Player.cs" />
+    <Compile Include="Position.cs" />
     <Compile Include="Requests.cs" />
     <Compile Include="Models\Requests\GameState.cs" />
     <Compile Include="Program.cs" />

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ConsoleRestTerminal.Models;
+using ConsoleRestTerminal.Models.Requests;
 
 namespace ConsoleRestTerminal
 {
@@ -31,7 +33,7 @@ namespace ConsoleRestTerminal
 		//	then add x * 5
 		// initial y offset == 1
 		// then add y * 3
-		public static void DrawGrid(List<int[]> playerPositions )
+		public static void DrawGrid(List<Player> players )
 		{
 			var gridTemplate = new[]
 			{
@@ -62,13 +64,13 @@ namespace ConsoleRestTerminal
 				@"+----+----+----+----+----+----+----+----+"
 			};
 
-			foreach (var playerPosition in playerPositions)
+			foreach (var player in players)
 			{
-				int rowIndexA = 1 + (playerPosition[1] * 3);
+				int rowIndexA = 1 + (player.Position.Y * 3);
 				int rowIndexB = rowIndexA + 1;
 				string rowA = gridTemplate[rowIndexA];
 				string rowB = gridTemplate[rowIndexB];
-				int colIndexA = 1 + (playerPosition[0] * 5);
+				int colIndexA = 1 + (player.Position.X * 5);
 				int shipWidth = 4;
 				StringBuilder sbA = new StringBuilder(rowA);
 				sbA.Replace("    ", ShipTop, colIndexA, shipWidth);

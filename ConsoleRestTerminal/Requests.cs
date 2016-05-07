@@ -40,10 +40,7 @@ namespace ConsoleRestTerminal
 			IList<TurnResponse> turnResponses = new List<TurnResponse>();
 			turnResponses.Add(turnResponse1);
 			turnResponses.Add(turnResponse2);
-
-			// temp output
-			//Console.WriteLine(turnResponse1);
-			//Console.WriteLine(turnResponse2);
+			
 			return turnResponses;
 		}
 
@@ -96,13 +93,6 @@ namespace ConsoleRestTerminal
 
 			// get response data
 			string responseData = await response.Content.ReadAsStringAsync();
-			//Stream responseDataStream = await response.Content.ReadAsStreamAsync();
-
-			// convert json string to type U
-			//DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(U));
-			//object objResponse = jsonSerializer.ReadObject(responseDataStream);
-			//U jsonResponse = (U)objResponse;
-
 			return responseData;
 		}
 
