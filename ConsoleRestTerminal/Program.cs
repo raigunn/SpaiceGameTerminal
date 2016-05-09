@@ -47,10 +47,10 @@ namespace ConsoleRestTerminal
 
 				Position position1 = ConvertDirectionToPosition((Directions)turnResponses.Result[0].MoveDirection, initialGameState.Players[0].Position);
 				Position position2 = ConvertDirectionToPosition((Directions)turnResponses.Result[1].MoveDirection, initialGameState.Players[1].Position);
-				Player player1 = new Player(0, "player 1", position1, turnResponses.Result[0].MoveDirection);
-				Player player2 = new Player(0, "player 2", position2, turnResponses.Result[1].MoveDirection);
+				Player player1 = new Player(0, "player 1", position1, turnResponses.Result[0].ShootDirection);
+				Player player2 = new Player(0, "player 2", position2, turnResponses.Result[1].ShootDirection);
 
-				initialGameState = MakeGameState(1, player1.Position, player2.Position);
+				initialGameState = MakeGameState(1, player1.Position, player2.Position, (int)player1.ShootDirection, (int)player2.ShootDirection);
 			}
 
 
@@ -202,16 +202,22 @@ namespace ConsoleRestTerminal
 		}
 
 
+		private static GameState MakeGameState(int round, Position player1, Position player2, int player1ShootDirection, int player2ShootDirection)
+		{
+			var gameState = new GameState()
+			{
+				Round = round,
+				GridSize = new int[] { 8, 8 },
+				Players = new List<Player>() { new Player(0, "player1", player1, player1ShootDirection), new Player(1, "player2", player2, player2ShootDirection) }
+			};
+			return gameState;
+		}
 
-		//private static void ProcessTurnResponse(TurnResponse turnResponse)
-		//{
-		//	var json = new JavaScriptSerializer().Serialize(turnResponse);
-		//	Console.WriteLine(json);
-		//}
 
 
 
-		
+
+
 
 
 		// if x == 0; replace [1-4]
