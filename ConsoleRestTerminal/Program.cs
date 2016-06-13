@@ -25,6 +25,11 @@ namespace ConsoleRestTerminal
 		private static string _url2 = "";
 		static void Main(string[] args)
 		{
+			// generate game id
+
+
+
+
 			// begin dialog to get url of server
 			_url1 = GetUrl1();
 			_url2 = GetUrl2();
@@ -41,7 +46,8 @@ namespace ConsoleRestTerminal
 				ConsoleDraw.DrawGrid(initialGameState.Players);
 
 				Requests bs = new Requests();
-				Task<IList<TurnResponse>> turnResponses = bs.RunGameRequests(_url1, _url2, initialGameState);
+				List<string> urls = new List<string>() {_url1, _url2};
+				Task<IList<TurnResponse>> turnResponses = bs.RunGameRequests2(urls, initialGameState);
 
 				Task.WaitAll(turnResponses); // block while the task completes
 
@@ -185,7 +191,7 @@ namespace ConsoleRestTerminal
 			{
 				Round = 1,
 				GridSize = new int[] {8,8},
-				Players = new List<Player>() { new Player(0, "player1", new Position(0, 1, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(4, 5, 0, 0), (int)Directions.Up) }
+				Players = new List<Player>() { new Player(0, "player1", new Position(0, 7, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(4, 5, 0, 0), (int)Directions.Up) }
 			};
 			return gameState;
 		}

@@ -44,6 +44,34 @@ namespace ConsoleRestTerminal
 			return turnResponses;
 		}
 
+		public async Task<IList<TurnResponse>> RunGameRequests2(List<string> urls , GameState gameState)
+		{
+			// Declare an HttpClient object, and increase the buffer size. The
+			// default buffer size is 65,536.
+			HttpClient client = new HttpClient() { MaxResponseContentBufferSize = 1000000 };  // is this max buffer size needed?
+			IList<TurnResponse> turnResponses = new List<TurnResponse>();
+
+			List<Task<string>> responses = new List<Task<string>>();
+			foreach (var url in urls)
+			{
+				responses.Add(SendPostAsync<GameState>(client, url + "Turn", gameState));
+				Thread.Sleep(10); // hack to make sure target servers are generating seeds from different timestamps
+			}
+
+			List<string> jsonResponses = new List<string>();
+			foreach (var response in responses)
+			{
+				jsonResponses.Add(await response);
+			}
+
+			foreach (var jsonResponse in jsonResponses)
+			{
+				turnResponses.Add(new JavaScriptSerializer().Deserialize<TurnResponse>(jsonResponse));
+			}
+			
+			return turnResponses;
+		}
+
 
 		private static int[] ConvertDirectionToCoordinate(int direction, int x, int y)
 		{

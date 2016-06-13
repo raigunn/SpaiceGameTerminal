@@ -20,7 +20,7 @@ namespace ConsoleRestTerminal.Models.Requests
 			{
 				Round = 1,
 				GridSize = new int[] { 8, 8 },
-				Players = new List<Player>() { new Player(0, "player1", new Position(0, 1, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(3, 4, 0, 0), (int)Directions.Up ) }
+				Players = new List<Player>() { new Player(0, "player1", new Position(3, 3, 0, 0), (int)Directions.Up), new Player(1, "player2", new Position(4, 4, 0, 0), (int)Directions.Left ) }
 			};
 			return gameState;
 		}
