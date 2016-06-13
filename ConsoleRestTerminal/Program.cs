@@ -21,19 +21,22 @@ namespace ConsoleRestTerminal
 
 	class Program
 	{
-		private static string _url1 = "";
-		private static string _url2 = "";
+		private static readonly List<string> _urls = new List<string>();
+		private static string _gameId = "";
 		static void Main(string[] args)
 		{
 			// generate game id
-
+			_gameId = RandomWrapper.RandomNumber(1, 10000).ToString();  // I will need this, but don't need it yet
 
 
 
 			// begin dialog to get url of server
-			_url1 = GetUrl1();
-			_url2 = GetUrl2();
+			GetUrls();
+
+			// dialog to get turn count
 			int turnCount = GetTurnCount();
+
+			// output that we are ready
 			DisplayServers();
 
 			Console.WriteLine(@"Press 'enter' to start game");
@@ -46,17 +49,18 @@ namespace ConsoleRestTerminal
 				ConsoleDraw.DrawGrid(initialGameState.Players);
 
 				Requests bs = new Requests();
-				List<string> urls = new List<string>() {_url1, _url2};
-				Task<IList<TurnResponse>> turnResponses = bs.RunGameRequests2(urls, initialGameState);
+				Task<IList<TurnResponse>> turnResponses = bs.RunGameRequests2(_urls, initialGameState);
 
 				Task.WaitAll(turnResponses); // block while the task completes
 
+				// todo convert this to take N players
+				// note: I think it will require correlating player responses
 				Position position1 = ConvertDirectionToPosition((Directions)turnResponses.Result[0].MoveDirection, initialGameState.Players[0].Position);
 				Position position2 = ConvertDirectionToPosition((Directions)turnResponses.Result[1].MoveDirection, initialGameState.Players[1].Position);
 				Player player1 = new Player(0, "player 1", position1, turnResponses.Result[0].ShootDirection);
 				Player player2 = new Player(0, "player 2", position2, turnResponses.Result[1].ShootDirection);
 
-				initialGameState = MakeGameState(1, player1.Position, player2.Position, (int)player1.ShootDirection, (int)player2.ShootDirection);
+				initialGameState = MakeGameState(1, player1.Position, player2.Position, player1.ShootDirection, player2.ShootDirection);
 			}
 
 
@@ -78,69 +82,52 @@ namespace ConsoleRestTerminal
 		}
 
 
-		private static string GetUrl1()
-		{
-			Console.WriteLine("Enter in server info: (http://localhost:8000/DEMOService/");
 
-			string url1 = "";
-			bool validServer = false;
-			do
-			{
-				url1 = Console.ReadLine();
-				if (url1 == "exit") return "exit";
-				if (url1 == "default1") url1 = "http://localhost:8000/DEMOService/";
-				else if (url1 == "default2") url1 = "http://localhost:8001/RestService/";
-
-				Console.WriteLine("");
-				PingResponse pingResponse = Requests.MakeGetRequest<PingResponse>(url1 + "Ping");
-				if (pingResponse == null)
-				{
-					Console.WriteLine("Please try again or type 'exit'");
-				}
-				else
-				{
-					ProcessResponse(pingResponse);
-					validServer = true;
-				}
-			} while (!validServer);
-			return url1;
-		}
-
-		private static string GetUrl2()
-		{
-			Console.WriteLine("Enter in server info: (http://localhost:8000/DEMOService/");
-
-			string url2 = "";
-			bool validServer = false;
-			do
-			{
-				url2 = Console.ReadLine();
-				if (url2 == "exit") return "exit";
-				if (url2 == "default1") url2 = "http://localhost:8000/DEMOService/";
-				else if (url2 == "default2") url2 = "http://localhost:8001/RestService/";
-
-				Console.WriteLine("");
-				PingResponse pingResponse = Requests.MakeGetRequest<PingResponse>(url2 + "Ping");
-				if (pingResponse == null)
-				{
-					Console.WriteLine("Please try again or type 'exit'");
-				}
-				else
-				{
-					ProcessResponse(pingResponse);
-					validServer = true;
-				}
-			} while (!validServer);
-
-			return url2;
-		}
 
 		private static void GetUrls()
 		{
+			do
+			{
+				Console.WriteLine("");
+				Console.WriteLine("Enter in server info: (http://localhost:8000/DEMOService/");
+				Console.WriteLine("'exit' to close application");
+				Console.WriteLine("'done' when finished adding servers");
 
-			// http://stackoverflow.com/questions/20365214/a-simple-menu-in-a-console-application
+				string input = Console.ReadLine();
+				//if (input == "exit") return "exit"; // todo
+				if (input == "done")
+				{
+					if (_urls.Count >= 2)
+					{
+						break;
+					}
+					else
+					{
+						Console.WriteLine("There should be at least 2 servers to continue, please enter another.");
+						continue;
+					}
+				}
 
+				var inputUrl = input == "default1" ? "http://localhost:8000/DEMOService/" : input;
+
+				PingResponse pingResponse = Requests.MakeGetRequest<PingResponse>(inputUrl + "Ping");
+				if (pingResponse == null)
+				{
+					Console.WriteLine("Please try again or type 'exit' or 'done'");
+					continue;
+				}
+					
+				ProcessResponse(pingResponse);
+				_urls.Add(inputUrl);
+			} while (true);
 		}
+
+		//private static void GetUrls()
+		//{
+
+		//	// http://stackoverflow.com/questions/20365214/a-simple-menu-in-a-console-application
+
+		//}
 
 
 
@@ -148,8 +135,10 @@ namespace ConsoleRestTerminal
 		private static void DisplayServers()
 		{
 			Console.WriteLine("Thank you, your two servers are:");
-			Console.WriteLine("URL 1: " + _url1);
-			Console.WriteLine("URL 2: " + _url2);
+			foreach (var url in _urls)
+			{
+				Console.WriteLine("URL: " + url);
+			}
 		}
 
 
@@ -185,27 +174,27 @@ namespace ConsoleRestTerminal
 		}
 
 
-		private static GameState MakeInitialGameState()
-		{
-			var gameState = new GameState()
-			{
-				Round = 1,
-				GridSize = new int[] {8,8},
-				Players = new List<Player>() { new Player(0, "player1", new Position(0, 7, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(4, 5, 0, 0), (int)Directions.Up) }
-			};
-			return gameState;
-		}
+		//private static GameState MakeInitialGameState()
+		//{
+		//	var gameState = new GameState()
+		//	{
+		//		Round = 1,
+		//		GridSize = new int[] {8,8},
+		//		Players = new List<Player>() { new Player(0, "player1", new Position(0, 7, 0, 0), (int)Directions.Down), new Player(1, "player2", new Position(4, 5, 0, 0), (int)Directions.Up) }
+		//	};
+		//	return gameState;
+		//}
 
-		private static GameState MakeGameState(int round, Position player1, Position player2)
-		{
-			var gameState = new GameState()
-			{
-				Round = round,
-				GridSize = new int[] { 8, 8 },
-				Players = new List<Player>() { new Player(0, "player1", player1, (int)Directions.Down), new Player(1, "player2", player2, (int)Directions.Up) }
-			};
-			return gameState;
-		}
+		//private static GameState MakeGameState(int round, Position player1, Position player2)
+		//{
+		//	var gameState = new GameState()
+		//	{
+		//		Round = round,
+		//		GridSize = new int[] { 8, 8 },
+		//		Players = new List<Player>() { new Player(0, "player1", player1, (int)Directions.Down), new Player(1, "player2", player2, (int)Directions.Up) }
+		//	};
+		//	return gameState;
+		//}
 
 
 		private static GameState MakeGameState(int round, Position player1, Position player2, int player1ShootDirection, int player2ShootDirection)

@@ -14,6 +14,9 @@ namespace ConsoleRestTerminal.Models.Requests
 		[DataMember]
 		public List<Player> Players { get; set; }
 
+		[DataMember]
+		public int Identifier { get; set; }
+
 		public static GameState MakeInitialGameState()
 		{
 			var gameState = new GameState()
