@@ -1,4 +1,4 @@
-﻿namespace ConsoleRestTerminal.Enums
+﻿namespace SpaiceGameTerminal.Enums
 {
 	public enum Directions
 	{
@@ -7,4 +7,6 @@
 		Down = 2,
 		Left = 3
 	}
+
+
 }

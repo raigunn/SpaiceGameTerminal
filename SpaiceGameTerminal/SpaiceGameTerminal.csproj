@@ -7,8 +7,8 @@
     <ProjectGuid>{CE566717-83B3-47B9-836F-ED4BB50FFF3D}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ConsoleRestTerminal</RootNamespace>
-    <AssemblyName>ConsoleRestTerminal</AssemblyName>
+    <RootNamespace>SpaiceGameTerminal</RootNamespace>
+    <AssemblyName>SpaiceGameTerminal</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web.Extensions" />
@@ -47,9 +48,25 @@
   <ItemGroup>
     <Compile Include="AsyncRequest2.cs" />
     <Compile Include="AynchRequest.cs" />
+    <Compile Include="Collisions\StandardCollisions.cs" />
+    <Compile Include="Collisions\ICollisions.cs" />
+    <Compile Include="AppConfigReader.cs" />
+    <Compile Include="Config\IConfigProvider.cs" />
+    <Compile Include="ConsoleColors.cs" />
     <Compile Include="ConsoleDraw.cs" />
+    <Compile Include="Domain\GridSize.cs" />
+    <Compile Include="Domain\TurnCount.cs" />
+    <Compile Include="EndGame\IEndGame.cs" />
+    <Compile Include="EndGame\StandardEndGame.cs" />
     <Compile Include="Enums\Directions.cs" />
+    <Compile Include="Extensions\DirectionExt.cs" />
+    <Compile Include="Extensions\PlayerExt.cs" />
+    <Compile Include="Extensions\RegisteredPlayerExt.cs" />
+    <Compile Include="Extensions\RegisterResponseExt.cs" />
+    <Compile Include="Intro.cs" />
+    <Compile Include="Models\RegisteredPlayer.cs" />
     <Compile Include="Models\Requests\Player.cs" />
+    <Compile Include="Models\Responses\RegisterResponse.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="RandomWrapper.cs" />
     <Compile Include="Requests.cs" />
@@ -61,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

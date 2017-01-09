@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace ConsoleRestTerminal.Models.Responses
+namespace SpaiceGameTerminal.Models.Responses
 {
 	[DataContract]
 	public class PingResponse

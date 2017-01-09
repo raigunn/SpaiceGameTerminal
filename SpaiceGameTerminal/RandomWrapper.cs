@@ -1,4 +1,4 @@
-﻿namespace ConsoleRestTerminal
+﻿namespace SpaiceGameTerminal
 {
 	using System;
 	public static class RandomWrapper
